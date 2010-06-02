@@ -3,7 +3,7 @@ require "action_controller"
 require "pathname"
 
 module Cell
-  class Base < AbstractController::Base
+  class Base < ActionController::Metal
     include AbstractController
     include Rendering, Layouts, Helpers, Callbacks, Translation
     include ActionController::RequestForgeryProtection
@@ -30,6 +30,10 @@ module Cell
       cached_actions.concat(actions.map {|a| a.to_s })
     end
 
+    def process(*)
+      self.response_body = super
+    end
+
     def render_to_string(*args)
       return super unless cached_actions.include?(action_name)
 
@@ -41,11 +45,6 @@ module Cell
     end
 
     attr_internal :request
-
-    def initialize(request)
-      @_request = request
-      super()
-    end
 
     delegate :session, :params, :to => "@_request"
 
